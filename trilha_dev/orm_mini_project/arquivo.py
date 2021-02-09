@@ -68,13 +68,9 @@ def run():
     # create a fake repo
     create_repo = Repo(user_name="fake_user", repo_name="fake_repo")
     session.add(create_repo)
-    # repo1 = (
-    #     Repo("fake-user", "fake-repo"),
-    # )
-    # session.add_all([repo1])
     session.commit()
 
-    # query the repos
+    # query the repos - I
     repos = session.query(Repo)
     print(
         [
@@ -82,13 +78,11 @@ def run():
             for repo in repos
         ]
     )
-
-    # # print customers who bought 'MySQL Crowbar' on sale
-    # q = session.query(Order).join("order_items", "item")
-    # q = q.filter(
-    #     and_(Item.description == "MySQL Crowbar", Item.price > OrderItem.price)
-    # )
-
-    # print([order.customer_name for order in q])
+    # query the repos - II
+    for repo_select in session.query(Repo):
+        print(repo_select.repo_name)
+    # query the repos - III
+    for repo_select in session.query(Repo).all():
+        print(repo_select.repo_name)
 
 run()
