@@ -1,10 +1,6 @@
 import urllib
 
-import pyodbc
-
 from datetime import datetime
-
-from flask_sqlalchemy import SQLAlchemy
 
 from sqlalchemy import and_
 from sqlalchemy import Column
@@ -15,7 +11,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+# from sqlalchemy.orm import relationship # Not needed
 from sqlalchemy.orm import Session
 
 # TODO: Connect to Azure LATER
