@@ -63,6 +63,7 @@ def run():
 
     # create a fake repo
     create_repo = Repo(user_name="fake_user", repo_name="fake_repo")
+    print(datetime.now())
     session.add(create_repo)
     session.commit()
 
