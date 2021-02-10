@@ -13,6 +13,7 @@ from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
 # from sqlalchemy.orm import relationship # Not needed
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.session import sessionmaker
 
 # TODO: Connect to Azure LATER
 # params = urllib.parse.quote_plus(
@@ -33,7 +34,7 @@ Model = declarative_base(name='Model')
 class Repo(Model):
     __tablename__ = "repo"
 
-    req_id = Column(Integer, primary_key=True)
+    req_id = Column(Integer, primary_key=True, autoincrement=True)
     req_date = Column(DateTime, nullable=False, default=datetime.now())
     user_name = Column(String(30), nullable=False)
     repo_name = Column(String(30), nullable=False)
@@ -42,7 +43,7 @@ class Repo(Model):
          self.user_name = user_name
          self.repo_name = repo_name
 
-def run():
+def run(rep_name: str, rep_user: str):
 
     driver = "{ODBC Driver 17 for SQL Server}"
     server = "kumulus-paoli.database.windows.net"
@@ -50,36 +51,23 @@ def run():
     user = "login"
     password = "Password123"
 
-    conn = f"""Driver={driver};Server=tcp:{server},1433;Database={database};
-    Uid={user};Pwd={password};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"""
+    conn = 'DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+user+';PWD='+password
 
     params = urllib.parse.quote_plus(conn)
     conn_str = 'mssql+pyodbc:///?autocommit=true&odbc_connect={}'.format(params)
-    engine = create_engine(conn_str, echo=True)
-    engine = create_engine("sqlite://")
+    engine = create_engine(conn_str, echo=False)
     Model.metadata.create_all(engine)
 
-    session = Session(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
     # create a fake repo
-    create_repo = Repo(user_name="fake_user", repo_name="fake_repo")
+    create_repo = Repo(user_name=rep_user, repo_name=rep_name)
     print(datetime.now())
     session.add(create_repo)
     session.commit()
 
-    # query the repos - I
-    repos = session.query(Repo)
-    print(
-        [
-            (repo.user_name, repo.repo_name)
-            for repo in repos
-        ]
-    )
-    # query the repos - II
-    for repo_select in session.query(Repo):
-        print(repo_select.repo_name)
-    # query the repos - III
-    for repo_select in session.query(Repo).all():
-        print(repo_select.repo_name)
+    select = session.query(Repo).all()
+    print(select[0].repo_name)
 
-run()
+run("fake_user_name", "fake_repo_name")
