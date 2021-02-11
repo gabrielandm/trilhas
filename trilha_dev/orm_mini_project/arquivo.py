@@ -14,20 +14,6 @@ from sqlalchemy.ext.declarative import declarative_base
 # from sqlalchemy.orm import relationship # Not needed
 from sqlalchemy.orm import Session
 
-# TODO: Connect to Azure LATER
-# params = urllib.parse.quote_plus(
-#     'Driver=%s;' % driver +
-#     'Server=tcp:%s,1433;' % server +
-#     'Database=%s;' % database +
-#     'Uid=%s;' % username +
-#     'Pwd={%s};' % password +
-#     'Encrypt=yes;' +
-#     'TrustServerCertificate=no;' +
-#     'Connection Timeout=30;')
-
-# conn_str = 'mssql+pyodbc:///?odbc_connect=' + params
-# engine = create_engine(conn_str)
-
 Model = declarative_base(name='Model')
 
 class Repo(Model):
@@ -43,7 +29,6 @@ class Repo(Model):
          self.repo_name = repo_name
 
 def run():
-
     driver = "{ODBC Driver 17 for SQL Server}"
     server = "kumulus-paoli.database.windows.net"
     database = "test_database"
@@ -60,13 +45,13 @@ def run():
 
     session = Session(engine)
 
-    # # create a fake repo
+    # # How to make a post via SQLAlchemy:
     # create_repo = Repo(user_name="fake_user", repo_name="fake_repo")
     # print(datetime.now())
     # session.add(create_repo)
     # session.commit()
 
-    # query the repos - III
+    # Select all rows
     for repo_select in session.query(Repo).all():
         print(repo_select.repo_name)
 
