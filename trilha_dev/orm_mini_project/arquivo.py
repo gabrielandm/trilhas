@@ -1,4 +1,5 @@
 import urllib
+import requests
 
 from datetime import datetime
 
@@ -28,31 +29,34 @@ class Repo(Model):
          self.user_name = user_name
          self.repo_name = repo_name
 
-def run():
-    driver = "{ODBC Driver 17 for SQL Server}"
-    server = "kumulus-paoli.database.windows.net"
-    database = "test_database"
-    user = "login"
-    password = "Password123"
+driver = "{ODBC Driver 17 for SQL Server}"
+server = "kumulus-paoli.database.windows.net"
+database = "test_database"
+user = "login"
+password = "Password123"
 
-    conn = f"""Driver={driver};Server=tcp:{server},1433;Database={database};
-    Uid={user};Pwd={password};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"""
+conn = f"""Driver={driver};Server=tcp:{server},1433;Database={database};
+Uid={user};Pwd={password};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"""
 
-    params = urllib.parse.quote_plus(conn)
-    conn_str = 'mssql+pyodbc:///?autocommit=true&odbc_connect={}'.format(params)
-    engine = create_engine(conn_str, echo=False)
-    Model.metadata.create_all(engine)
+params = urllib.parse.quote_plus(conn)
+conn_str = 'mssql+pyodbc:///?autocommit=true&odbc_connect={}'.format(params)
+engine = create_engine(conn_str, echo=False)
+Model.metadata.create_all(engine)
 
-    session = Session(engine)
+session = Session(engine)
 
-    # # How to make a post via SQLAlchemy:
-    # create_repo = Repo(user_name="fake_user", repo_name="fake_repo")
-    # print(datetime.now())
-    # session.add(create_repo)
-    # session.commit()
+def save_repos(session: Session, username: str): # Use the session and the username name as Str
+    url = "https://api.github.com/users/" + username + "/repos"
+    repos = requests.get(url)
+    repos = repos.json()
 
-    # Select all rows
+    for repo in repos:
+        create_repo = Repo(user_name = username, repo_name = repo["name"])
+        session.add(create_repo)
+        session.commit()
+
+def print_all_repos_sql(session: Session): # Use the session
     for repo_select in session.query(Repo).all():
         print(repo_select.repo_name)
 
-run()
+# Try the functions:
