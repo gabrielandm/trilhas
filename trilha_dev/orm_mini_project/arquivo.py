@@ -13,7 +13,6 @@ from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
 # from sqlalchemy.orm import relationship # Not needed
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.session import sessionmaker
 
 # TODO: Connect to Azure LATER
 # params = urllib.parse.quote_plus(
@@ -43,7 +42,7 @@ class Repo(Model):
          self.user_name = user_name
          self.repo_name = repo_name
 
-def run(rep_name: str, rep_user: str):
+def run():
 
     driver = "{ODBC Driver 17 for SQL Server}"
     server = "kumulus-paoli.database.windows.net"
@@ -51,23 +50,24 @@ def run(rep_name: str, rep_user: str):
     user = "login"
     password = "Password123"
 
-    conn = 'DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+user+';PWD='+password
+    conn = f"""Driver={driver};Server=tcp:{server},1433;Database={database};
+    Uid={user};Pwd={password};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"""
 
     params = urllib.parse.quote_plus(conn)
     conn_str = 'mssql+pyodbc:///?autocommit=true&odbc_connect={}'.format(params)
     engine = create_engine(conn_str, echo=False)
     Model.metadata.create_all(engine)
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session = Session(engine)
 
-    # create a fake repo
-    create_repo = Repo(user_name=rep_user, repo_name=rep_name)
-    print(datetime.now())
-    session.add(create_repo)
-    session.commit()
+    # # create a fake repo
+    # create_repo = Repo(user_name="fake_user", repo_name="fake_repo")
+    # print(datetime.now())
+    # session.add(create_repo)
+    # session.commit()
 
-    select = session.query(Repo).all()
-    print(select[0].repo_name)
+    # query the repos - III
+    for repo_select in session.query(Repo).all():
+        print(repo_select.repo_name)
 
-run("fake_user_name", "fake_repo_name")
+run()
