@@ -12,7 +12,6 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import relationship # Not needed
 from sqlalchemy.orm import Session
 
 Model = declarative_base(name='Model')
