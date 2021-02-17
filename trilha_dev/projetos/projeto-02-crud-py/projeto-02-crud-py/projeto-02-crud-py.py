@@ -1,10 +1,3 @@
-"""
-TODO
- [X] - Create DB for products (name | description | price)
- [X] - Create add new product functions using Flask and SQLAlchemy
- [X] - Test if it works...
-"""
-
 import urllib
 from sqlalchemy import Float, String, Column, create_engine
 from sqlalchemy.ext.declarative import declarative_base
