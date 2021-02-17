@@ -1,3 +1,7 @@
+# Fix errors
+#   - .update() error
+#   - filtered search error
+
 import urllib
 from sqlalchemy import Float, String, Column, create_engine
 from sqlalchemy.ext.declarative import declarative_base
