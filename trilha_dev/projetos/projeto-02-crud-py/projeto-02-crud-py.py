@@ -1,7 +1,3 @@
-# Fix errors
-#   - .update() error
-#   - filtered search error
-
 import urllib
 from sqlalchemy import Float, String, Column, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -28,7 +24,7 @@ class Product(Model):
         return {
        	    'name': self.name,
             'description': self.description,
-            'price': self.price
+            'price': float(self.price)
         }
 
 driver = "{ODBC Driver 17 for SQL Server}"
@@ -62,30 +58,38 @@ def readProducts():
     # Filtered search set False (Default)
     filtered = False
     equal = True
+    higher = False
     # Getting all possible filters
-    if request.args.get('name', '') is not None:
+    if request.args.get('name', '') != '':
         filtered = True
         name = request.args.get('name', '')
     else:
         name = '%{}%'
     
-    if request.args.get('description', '') is not None:
+    if request.args.get('description', '') != '':
         filtered = True
         description = request.args.get('description', '')
     else:
         description = '%{}%'
     
-    if request.args.get('price', '') is not None:
+    if request.args.get('price', '') != '':
         filtered = True
         price = request.args.get('price', '')
         if request.args.get('higher', '') == 'true':
             higher = True
-        else:
-            higher = False
         if request.args.get('equal', '') == 'false':
             equal = False
     else:
-        price = 1000000
+        price: float = 1000000
+
+    try:
+        price = float(price)
+    except:
+        print("Invalid float.")
+        return {
+            'status': 'could not update product',
+            'reason': 'invalid float entered'
+        }
 
     # Calling function to search for products
     if filtered == True:
@@ -168,7 +172,7 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
             print('Filtering...\n'
                 'Name like ' + name + '\n'
                 'description like ' + description + '\n',
-                'price >= ' + price
+                'price >= ' + str(price)
             )
             products = session.query(Product).filter(
                 Product.name.like(name),
@@ -179,7 +183,7 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
             print('Filtering...\n'
                 'Name like ' + name + '\n'
                 'description like ' + description + '\n',
-                'price <= ' + price
+                'price <= ' + str(price)
             )
             products = session.query(Product).filter(
                 Product.name.like(name),
@@ -191,7 +195,7 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
             print('Filtering...\n'
                 'Name like ' + name + '\n'
                 'description like ' + description + '\n',
-                'price > ' + price
+                'price > ' + str(price)
             )
             products = session.query(Product).filter(
                 Product.name.like(name),
@@ -202,21 +206,19 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
             print('Filtering...\n'
                 'Name like ' + name + '\n'
                 'description like ' + description + '\n',
-                'price < ' + price
+                'price < ' + str(price)
             )
             products = session.query(Product).filter(
                 Product.name.like(name),
                 Product.description.like(description),
                 Product.price < price
             )
-    
-    return jsonify(Product=[products.serialize for product in products])
+    return jsonify(products_json=[product.serialize for product in products])
 
 def searchAllProducts():
     print("Listing all products...")
     products = session.query(Product).all()
-    
-    return jsonify(Product=[products.serialize for product in products])
+    return jsonify(products_json=[product.serialize for product in products])
 
 def removeProductByName(name: str):
     if session.query(Product).filter(Product.name == name).first() is None:
@@ -237,7 +239,7 @@ def modifyProductValue(value_name: str, name: str, new_value: str or float):
     if value_name == 'description':
         if session.query(Product).filter(Product.name == name).first() is not None and len(new_value) <= 64:
             print("Product description modified.")
-            session.query(Product).filter(Product.name == name).update(description = new_value, synchronize_session=False)
+            session.query(Product).filter(Product.name == name).update({"description": new_value}) #description = new_value, synchronize_session=False
             return {
                 'status': 'product description modified',
                 'reason': ''
@@ -257,7 +259,7 @@ def modifyProductValue(value_name: str, name: str, new_value: str or float):
     elif value_name == 'price':
         if session.query(Product).filter(Product.name == name).first() is not None and new_value < 100000:
             print("Product price modified.")
-            session.query(Product).filter(Product.name == name).update(price = new_value, synchronize_session=False)
+            session.query(Product).filter(Product.name == name).update({"price": new_value}, synchronize_session=False)
             return {
                 'status': 'product price modified',
                 'reason': ''
