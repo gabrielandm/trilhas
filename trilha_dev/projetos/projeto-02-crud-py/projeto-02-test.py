@@ -61,7 +61,7 @@ def test_update_product():
     add_new_product("product+to+update", "", "100")
     update_product("description", "product+to+update", "Updated description")
     search_filtered_product_name("product+to+update")
-    #delete_product("product+to+update")
+    delete_product("product+to+update")
 
 # test_add_new_product()
 # test_delete_product()
