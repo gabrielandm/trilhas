@@ -57,12 +57,15 @@ def createNewProduct():
 def readProducts():
     # Filtered search set False (Default)
     filtered = False
-    equal = True
+    price_equal = True
+    name_equal = False
     higher = False
     # Getting all possible filters
     if request.args.get('name', '') != '':
         filtered = True
         name = request.args.get('name', '')
+        if request.args.get('name-equal', '') == 'true':
+            name_equal = True
     else:
         name = ''
     
@@ -77,8 +80,8 @@ def readProducts():
         price = request.args.get('price', '')
         if request.args.get('higher', '') == 'true':
             higher = True
-        if request.args.get('equal', '') == 'false':
-            equal = False
+        if request.args.get('price-equal', '') == 'false':
+            price_equal = False
     else:
         price: float = 1000000
 
@@ -93,7 +96,7 @@ def readProducts():
 
     # Calling function to search for products
     if filtered == True:
-        return searchFilteredProducts(name, description, price, higher, equal)
+        return searchFilteredProducts(name, description, price, higher, price_equal, name_equal)
     else:
         return searchAllProducts()
 
@@ -166,53 +169,101 @@ def addNewProduct(name: str, description: str, price: str):
             'reason': ''
         }
 
-def searchFilteredProducts(name: str, description: str, price: float, higher: bool, equal: bool):
-    if equal == True:
-        if higher == True:
-            print('Filtering...\n'
-                'Name like ' + name + '\n'
-                'description like ' + description + '\n',
-                'price >= ' + str(price)
-            )
-            products = session.query(Product).filter(
-                Product.name.like("%" + name + "%"),
-                Product.description.like("%" + description + "%"),
-                Product.price >= price
-            )
+def searchFilteredProducts(name: str, description: str, price: float, higher: bool, price_equal: bool, name_equal: bool):
+    if name_equal == False:
+        if price_equal == True:
+            if higher == True:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price >= ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like("%" + name + "%"),
+                    Product.description.like("%" + description + "%"),
+                    Product.price >= price
+                )
+            else:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price <= ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like("%" + name + "%"),
+                    Product.description.like("%" + description + "%"),
+                    Product.price <= price
+                )
         else:
-            print('Filtering...\n'
-                'Name like ' + name + '\n'
-                'description like ' + description + '\n',
-                'price <= ' + str(price)
-            )
-            products = session.query(Product).filter(
-                Product.name.like("%" + name + "%"),
-                Product.description.like("%" + description + "%"),
-                Product.price <= price
-            )
+            if higher == True:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price > ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like("%" + name + "%"),
+                    Product.description.like("%" + description + "%"),
+                    Product.price > price
+                )
+            else:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price < ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like("%" + name + "%"),
+                    Product.description.like("%" + description + "%"),
+                    Product.price < price
+                )
     else:
-        if higher == True:
-            print('Filtering...\n'
-                'Name like ' + name + '\n'
-                'description like ' + description + '\n',
-                'price > ' + str(price)
-            )
-            products = session.query(Product).filter(
-                Product.name.like("%" + name + "%"),
-                Product.description.like("%" + description + "%"),
-                Product.price > price
-            )
+        if price_equal == True:
+            if higher == True:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price >= ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like(name),
+                    Product.description.like("%" + description + "%"),
+                    Product.price >= price
+                )
+            else:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price <= ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like(name),
+                    Product.description.like("%" + description + "%"),
+                    Product.price <= price
+                )
         else:
-            print('Filtering...\n'
-                'Name like ' + name + '\n'
-                'description like ' + description + '\n',
-                'price < ' + str(price)
-            )
-            products = session.query(Product).filter(
-                Product.name.like("%" + name + "%"),
-                Product.description.like("%" + description + "%"),
-                Product.price < price
-            )
+            if higher == True:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price > ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like(name),
+                    Product.description.like("%" + description + "%"),
+                    Product.price > price
+                )
+            else:
+                print('Filtering...\n'
+                    'Name like ' + name + '\n'
+                    'description like ' + description + '\n',
+                    'price < ' + str(price)
+                )
+                products = session.query(Product).filter(
+                    Product.name.like(name),
+                    Product.description.like("%" + description + "%"),
+                    Product.price < price
+                )
     return jsonify(products_json=[product.serialize for product in products])
 
 def searchAllProducts():
