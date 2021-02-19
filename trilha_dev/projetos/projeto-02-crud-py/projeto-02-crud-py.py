@@ -64,13 +64,13 @@ def readProducts():
         filtered = True
         name = request.args.get('name', '')
     else:
-        name = '%{}%'
+        name = ''
     
     if request.args.get('description', '') != '':
         filtered = True
         description = request.args.get('description', '')
     else:
-        description = '%{}%'
+        description = ''
     
     if request.args.get('price', '') != '':
         filtered = True
@@ -166,7 +166,7 @@ def addNewProduct(name: str, description: str, price: str):
             'reason': ''
         }
 
-def searchFilteredProducts(name: str, description: str, price: str, higher: bool, equal: bool):
+def searchFilteredProducts(name: str, description: str, price: float, higher: bool, equal: bool):
     if equal == True:
         if higher == True:
             print('Filtering...\n'
@@ -175,8 +175,8 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
                 'price >= ' + str(price)
             )
             products = session.query(Product).filter(
-                Product.name.like(name),
-                Product.description.like(description),
+                Product.name.like("%" + name + "%"),
+                Product.description.like("%" + description + "%"),
                 Product.price >= price
             )
         else:
@@ -186,8 +186,8 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
                 'price <= ' + str(price)
             )
             products = session.query(Product).filter(
-                Product.name.like(name),
-                Product.description.like(description),
+                Product.name.like("%" + name + "%"),
+                Product.description.like("%" + description + "%"),
                 Product.price <= price
             )
     else:
@@ -198,8 +198,8 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
                 'price > ' + str(price)
             )
             products = session.query(Product).filter(
-                Product.name.like(name),
-                Product.description.like(description),
+                Product.name.like("%" + name + "%"),
+                Product.description.like("%" + description + "%"),
                 Product.price > price
             )
         else:
@@ -209,8 +209,8 @@ def searchFilteredProducts(name: str, description: str, price: str, higher: bool
                 'price < ' + str(price)
             )
             products = session.query(Product).filter(
-                Product.name.like(name),
-                Product.description.like(description),
+                Product.name.like("%" + name + "%"),
+                Product.description.like("%" + description + "%"),
                 Product.price < price
             )
     return jsonify(products_json=[product.serialize for product in products])
