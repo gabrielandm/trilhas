@@ -47,6 +47,11 @@ def createNewProduct():
     if request.method == 'POST':
         # Taking values from URL
         name = request.args.get('name', '')
+        if name == '':
+            return {
+                "status": "Creation failed",
+                "reason": "The product name entered is null"
+            }
         description = request.args.get('description', '')
         price = request.args.get('price', '')
         # Calling function to add new product to DB
@@ -88,7 +93,6 @@ def readProducts():
     try:
         price = float(price)
     except:
-        print("Invalid float.")
         return {
             'status': 'could not update product',
             'reason': 'invalid float entered'
@@ -111,7 +115,6 @@ def updateProductByName():
         try:
             new_value = float(new_value)
         except:
-            print("Invalid float.")
             return {
                 'status': 'could not update product',
                 'reason': 'invalid float entered'
@@ -131,28 +134,24 @@ def addNewProduct(name: str, description: str, price: str):
 
     # Verify if product already exists
     if session.query(Product).filter(Product.name == name).first() is not None:
-        print("Product already exists.")
         return {
             'status': 'product not created',
             'reason': 'product already registered'
         }
     # Verify name lenght
     if len(name) > 32:
-        print("Name is too big.")
         return {
             'status': 'product not created',
             'reason': 'name bigger than 32 characters'
         }
     # Verify description lenght
     if len(description) > 64:
-        print("Description is too big.")
         return {
             'status': 'product not created',
             'reason': 'description bigger than 64 characters'
         }
     # Verify price limit
     if price > 99999.99:
-        print("Price is too high.")
         return {
             'status': 'product not created',
             'reason': 'price is too high'
@@ -163,7 +162,6 @@ def addNewProduct(name: str, description: str, price: str):
         session.add(new_product)
         session.commit()
 
-        print("Product created.")
         return {
             'status': 'product created',
             'reason': ''
@@ -173,22 +171,12 @@ def searchFilteredProducts(name: str, description: str, price: float, higher: bo
     if name_equal == False:
         if price_equal == True:
             if higher == True:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price >= ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like("%" + name + "%"),
                     Product.description.like("%" + description + "%"),
                     Product.price >= price
                 )
             else:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price <= ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like("%" + name + "%"),
                     Product.description.like("%" + description + "%"),
@@ -196,22 +184,12 @@ def searchFilteredProducts(name: str, description: str, price: float, higher: bo
                 )
         else:
             if higher == True:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price > ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like("%" + name + "%"),
                     Product.description.like("%" + description + "%"),
                     Product.price > price
                 )
             else:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price < ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like("%" + name + "%"),
                     Product.description.like("%" + description + "%"),
@@ -220,22 +198,12 @@ def searchFilteredProducts(name: str, description: str, price: float, higher: bo
     else:
         if price_equal == True:
             if higher == True:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price >= ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like(name),
                     Product.description.like("%" + description + "%"),
                     Product.price >= price
                 )
             else:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price <= ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like(name),
                     Product.description.like("%" + description + "%"),
@@ -243,22 +211,12 @@ def searchFilteredProducts(name: str, description: str, price: float, higher: bo
                 )
         else:
             if higher == True:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price > ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like(name),
                     Product.description.like("%" + description + "%"),
                     Product.price > price
                 )
             else:
-                print('Filtering...\n'
-                    'Name like ' + name + '\n'
-                    'description like ' + description + '\n',
-                    'price < ' + str(price)
-                )
                 products = session.query(Product).filter(
                     Product.name.like(name),
                     Product.description.like("%" + description + "%"),
@@ -267,19 +225,16 @@ def searchFilteredProducts(name: str, description: str, price: float, higher: bo
     return jsonify(products_json=[product.serialize for product in products])
 
 def searchAllProducts():
-    print("Listing all products...")
     products = session.query(Product).all()
     return jsonify(products_json=[product.serialize for product in products])
 
 def removeProductByName(name: str):
     if session.query(Product).filter(Product.name == name).first() is None:
-        print("Product not found.")
         return {
             'status': 'product not found',
             'reason': 'entered incorrect name'
         }
     else:
-        print("Product deleted.")
         session.query(Product).filter(Product.name == name).delete(synchronize_session=False)
         return {
             'status': 'product deleted',
@@ -289,40 +244,34 @@ def removeProductByName(name: str):
 def modifyProductValue(value_name: str, name: str, new_value: str or float):
     if value_name == 'description':
         if session.query(Product).filter(Product.name == name).first() is not None and len(new_value) <= 64:
-            print("Product description modified.")
             session.query(Product).filter(Product.name == name).update({"description": new_value}) #description = new_value, synchronize_session=False
             return {
                 'status': 'product description modified',
                 'reason': ''
             }
         elif len(new_value) > 64:
-            print('Description too big.')
             return {
                 'status': 'description too big',
                 'reason': 'description must be smaller than 64 characters'
             }
         else:
-            print('Product not found')
             return {
                 'status': 'product not found',
                 'reason': 'name not found in database'
             }
     elif value_name == 'price':
         if session.query(Product).filter(Product.name == name).first() is not None and new_value < 100000:
-            print("Product price modified.")
             session.query(Product).filter(Product.name == name).update({"price": new_value}, synchronize_session=False)
             return {
                 'status': 'product price modified',
                 'reason': ''
             }
         elif new_value >= 100000:
-            print('Price too high.')
             return {
                 'status': 'price too high',
                 'reason': 'price must be lower than 100000'
             }
         else:
-            print('Product not found')
             return {
                 'status': 'product not found',
                 'reason': 'name not found in database'
