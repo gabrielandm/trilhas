@@ -12,10 +12,11 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
     ACCEPT_EULA=Y apt-get install mssql-tools && \
     echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile && \
     echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc && \
+    # /bin/bash source ~/.bashrc && \
     apt-get install -y unixodbc-dev
 
 RUN pip install sqlalchemy Flask pyodbc
 
-COPY projeto-03-crud-py-docker.py .
+COPY projeto-04-crud-py-docker.py .
 
-CMD [ "python", "./projeto-03-crud-py-docker.py" ]
+CMD [ "python", "./projeto-04-crud-py-docker.py" ]
