@@ -1,0 +1,1 @@
+Projeto 7 is included in Projeto 6, with those files you can make the deploy of the functions into Azure Functions

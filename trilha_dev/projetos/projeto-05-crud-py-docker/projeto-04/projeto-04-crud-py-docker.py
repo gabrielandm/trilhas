@@ -27,19 +27,21 @@ class Product(Model):
             'price': float(self.price)
         }
 
-driver = "{ODBC Driver 17 for SQL Server}"
-server = "kumulus-paoli.database.windows.net"
-database = "test_database"
+server = "localhost" # Change localhost to the current IP
+database = "master"
 user = "login"
 password = "Password123"
-conn = f"""Driver={driver};Server=tcp:{server},1433;Database={database};
-Uid={user};Pwd={password};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"""
 
-params = urllib.parse.quote_plus(conn)
-conn_str = 'mssql+pyodbc:///?autocommit=true&odbc_connect={}'.format(params)
+conn_str = 'mysql+pymysql://'+user+':'+password+'@'+server+'/'+database+'?charset=utf8mb4&autocommit=true'
 engine = create_engine(conn_str, echo=False)
 Model.metadata.create_all(engine)
 session = Session(engine)
+
+@app.route('/')
+def indexPage():
+    return {
+        "index": "True"
+    }
 
 # CREATE - Add new products to the DB (products)
 @app.route('/product-subscription', methods= ['POST'])
@@ -47,11 +49,6 @@ def createNewProduct():
     if request.method == 'POST':
         # Taking values from URL
         name = request.args.get('name', '')
-        if name == '':
-            return {
-                "status": "Creation failed",
-                "reason": "The product name entered is null"
-            }
         description = request.args.get('description', '')
         price = request.args.get('price', '')
         # Calling function to add new product to DB
@@ -280,4 +277,4 @@ def modifyProductValue(value_name: str, name: str, new_value: str or float):
 
 if __name__ == '__main__':
     app.debug = False
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=80)

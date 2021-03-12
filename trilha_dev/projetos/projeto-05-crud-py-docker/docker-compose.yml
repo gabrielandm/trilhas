@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  database:
+    build: ./mysql-image
+    container_name: database
+    volumes:
+      - ./mysql-image:/usr/src/app
+    ports:
+      - 3306:3306
+
+  api:
+    build: ./projeto-04
+    container_name: api
+    ports:
+      - 80:80
+    depends_on:
+      - database
